@@ -1,0 +1,63 @@
+version: "3.9"
+
+services:
+  db:
+    image: mysql:9
+    container_name: mysql-db
+    volumes:
+      - mysql-data:/var/lib/mysql
+    environment:
+      MYSQL_ROOT_PASSWORD: root@123
+      MYSQL_USER: test
+      MYSQL_PASSWORD: test@123
+      MYSQL_DATABASE: test-db
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD","mysqladmin","ping","-h","localhost","-utest","-ptest@123"]  
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+      
+
+  phpmyadmin:
+    image: phpmyadmin/phpmyadmin
+    container_name: phpmyadmin
+    environment:
+      PMA_HOST: mysql-db
+      PMA_PORT: 3306
+      PMA_USER: test
+      PMA_PASSWORD: test@123
+    ports:
+      - 80:80
+    depends_on:
+      db:
+        condition: service_healthy
+
+  springboot:
+    build: 
+      context: .
+    container_name: spring_boot_app
+    environment:
+      SERVER_PORT: 8080
+      MYSQL_HOST: mysql-db
+      MYSQL_PORT: 3306
+      MYSQL_DB: test-db
+      MYSQL_USER: test
+      MYSQL_PASSWORD: test@123
+      EMAIL_HOST: smtp.gmail.com
+      EMAIL_PORT: 587
+      EMAIL_USERNAME: batchlcwd@gmail.com
+      EMAIL_PASSWORD: dqwxmxfvukvwhnkh
+      EMAIL_DOMAIN: batchlcwd@gmail.com
+      CLOUDINARY_API_KEY: 575233445171369
+      CLOUDINARY_API_SECRET: WF88TQpJyKATyZCv4o4M0dx3xEQ
+      CLOUDINARY_NAME: derpgrwbe
+    ports:
+      - 8080:8080
+    depends_on:
+      db:
+        condition: service_healthy
+
+volumes:
+  mysql-data:
